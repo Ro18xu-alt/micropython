@@ -4,7 +4,7 @@ from math import log
 VCC = 3.3  # Voltage In
 T_0 = 298.15  # Kelvin
 THERM_MIN = 263  # Kelvin, min expected thermistor value
-THERM_MAX = 333  # Kelvin, max expected thermistor value
+THERM_MAX = 348  # Kelvin, max expected thermistor value
 KELVIN_AT_0_CELSIUS = 273.15
 UV_TO_V_CONVERSION = 1e6  # Microvolts in a Volt
 FAHRENHEIT_MULTIPLIER = 9 / 5

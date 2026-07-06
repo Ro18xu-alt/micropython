@@ -1,0 +1,52 @@
+import micropython
+import pyb
+from pyb import Pin
+import utime
+
+
+
+led_green = pyb.LED(1)
+led_blue  = pyb.LED(2)
+led_red = pyb.LED(3)
+pin_out_1 = Pin("A0", Pin.OUT_PP)                   # CN9_1
+pin_out_2 = Pin("C0", Pin.OUT_PP)                   # CN9_3
+
+pin_in_1 = Pin(Pin.cpu.D7, Pin.PULL_DOWN)  # CN9_2
+pin_in_2 = Pin(Pin.cpu.D6, Pin.PULL_DOWN)  # CN9_4
+
+pin_dict_test_1 = {
+    "Molex J1.2 ---> microFit J8.3" : (pin_out_1, pin_in_1),
+    "Molex J1.1 ---> RisoConnect J8.4" : (pin_out_2, pin_in_2)
+}
+
+def pin_list():
+    print(dir(Pin.cpu))
+    
+def harness_pin_test(pin_map, pin_to_test):
+    print(f"{pin_to_test:^36}", end='')
+    pin_tuple = pin_map[pin_to_test]
+    pin_tuple[0].value(1)
+    utime.sleep(0.5)
+    reading_pass_flag = False
+    for _ in range(3):
+        #print(f"{_}", end=' ')
+        if pin_tuple[1].value() == 1:
+            reading_pass_flag = True
+            #print("  ", end='')
+            print(f"[ \033[32mPASS\033[0m ]")
+            break
+        utime.sleep(0.1)
+    if reading_pass_flag == False:
+        #print("  ", end='')
+        print("[ \033[31mFAIL\033[0m ]")
+        
+    pin_tuple[0].value(0)
+            
+def harness_test(pin_map_to_test):
+    print(f"TEST HARNESS: {"mome":^20} | RESULT")
+    print("-"*45)           
+    for _ in pin_map_to_test:
+        harness_pin_test(pin_map_to_test, _)
+
+def stampa():
+    print("questo file è solo in memoria RAM")

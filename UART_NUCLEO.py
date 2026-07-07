@@ -1,6 +1,7 @@
 import micropython
 import pyb
 from pyb import Pin
+import json
 import utime
 import select
 from protocollo import ProtocolTimeout, read_line, write_line
@@ -130,25 +131,31 @@ poll.register(usb, select.POLLIN) #  qui indico quale evento controllare - POLLI
 #         utime.sleep(0.5)
 #         return False
     
-def gestisci_comando(cmd):
+def gestisci_comando(usb, cmd):
     
     reset_pin_state()
+    if cmd == "ECHO":
+        echo()
+        return print(b"eseguito comando 'ECHO'")
 
-    if cmd == 'START':
-        corti = test_pin(PIN_CONFIG)   
+    elif cmd == "2":
+        write_line(usb, "Questo è il caso 2")
+
+    elif cmd == 'HARNESS TEST':
+        corti = test_pin(PIN_CONFIG)
+        #print(corti)   
         if not corti:
             return "SHORT:NONE"
-        coppie = ",".join("{}-{}".format(a,b) for a, b in corti)
-        return "SHORT:FOUND:{}".format(coppie) 
-    
+        #coppie = ",".join("{}-{}".format(a,b) for a, b in corti)
+        usb.write((json.dumps(corti) + "\n").encode('utf-8'))
+        return "SHORT:FOUND"#.format(coppie) 
+        
     else:
         return "ERR: comando sconosciuto {}".format(cmd)
     
-def test():
+def input_comando():
 
-    while not usb.isconnected():
-        pass
-    write_line(usb, "READY")
+    handshake()
 
     while True:
         try:
@@ -162,9 +169,8 @@ def test():
             reset_pin_state()
             break
 
-        risposta = gestisci_comando(cmd)
+        risposta = gestisci_comando(usb, cmd)
         write_line(usb, risposta)
-        print(risposta)
 
 def handshake():
     while not usb.isconnected():
@@ -172,24 +178,11 @@ def handshake():
     write_line(usb, "READY")
 
 def echo():
-    while not usb.isconnected():
-        pass
-    write_line(usb, "READY")
 
     testo = read_line(usb, poll)
-    
+    #print(type(testo), testo)
     write_line(usb, testo)
-
-def gestisci_lista_comandi():
-    handshake()
-
-    cmd = read_line(usb, poll)
-
-    if cmd == b"1":
-        write_line(usb, "Questo è il caso 1")
-
-    elif cmd == b"2":
-        write_line(usb, "Questo è il caso 2")
+    return
 
 
     

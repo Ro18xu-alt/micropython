@@ -23,3 +23,6 @@ def write_line(usb, testo):
         usb.write((testo + '\n').encode('utf-8'))
     else: 
         usb.write(testo + b'\n')
+        
+        
+        

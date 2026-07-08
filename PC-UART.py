@@ -8,7 +8,7 @@ baudrate = 9600
 port = "COM28"
 timeout = 20
 
-connessioni_attese = (('A0', 'D7'), ('D7', 'A0'))
+connessioni_attese = (('A0', 'D51'), ('D21', 'D12'), ('D16', 'D15'), ('D24', 'D10'), ('D9', 'D25'))
 
 
 class SerialComm:
@@ -32,7 +32,7 @@ class SerialComm:
         deadline = time.time() + timeout
         buf = bytearray()
         while time.time() < deadline:
-            ch = self._ser.read(1)
+            ch = self._ser.read(1) #type: ignore
             if ch:
                 if ch == b'\n':
                     return bytes(buf)
@@ -70,10 +70,10 @@ def valida_harness(connessioni_rilevate, connessioni_attese):
 def main():
     print("PC-UART")
     
-    with SerialComm() as s:
+    with SerialComm(port="/dev/ttyACM1") as s:
         
         s.handshake()
-        s._ser.write(b"HARNESS TEST\n")
+        s._ser.write(b"HARNESS TEST\n") #type: ignore
         #s.write(b"ECHO\n")
         # time.sleep(0.02)
         # s._ser.write(b"prova ECHOooooooo\n")
@@ -82,14 +82,16 @@ def main():
         #list(line)
         # print(f"stampo line: {line}")
         # print(f"stampo type line : {type(line)}")
+        #print(line_raw)
         try:
             connessioni_rilevate = [tuple(coppia) for coppia in json.loads(line_raw)]
+            #print(connessioni_rilevate)
         except Exception:
             raise ValueError("Errore nella conversione del file json")
         
         mancanti, inattese = valida_harness(connessioni_rilevate=connessioni_rilevate, connessioni_attese=connessioni_attese)
 
-        print(mancanti)
+        print(f"connessioni mancanti: {mancanti}")
         print(f"connessioni inattese: {inattese}")
     pass
 

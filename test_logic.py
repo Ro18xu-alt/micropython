@@ -3,7 +3,7 @@
 from pyb import Pin
 import utime
 
-def test_pin(pins_dict: dict, settling_ms=100):
+def test_pin(pins_dict: dict, settling_ms=20):
     nomi_pin = list(pins_dict.keys())
     connessioni_trovate = []
 

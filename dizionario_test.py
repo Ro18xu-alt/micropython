@@ -18,4 +18,4 @@ print(nomi)
 
 for driver_nome in nomi:
     pin = PIN_CONFIG[driver_nome]
-    print(pin)
+    

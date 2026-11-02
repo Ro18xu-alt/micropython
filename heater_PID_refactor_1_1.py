@@ -82,22 +82,8 @@ def heater_PID_continue(setpoint=35, window = 1.5):
             # Calcolo tempo ON
             on_time = (out_pid / 100.0) * window # type:ignore
 
-            # print("Measured Temperature: {:.2f} C".format(temperatura_attuale))
-            # print("PID Output: {:.1f} %".format(out_pid))
-            # print("ON Time: {:.3f}".format(on_time))
-            # print()
-            
-            adc_A1_read, adc_A1_percent, adc_V_read, adc_A1_output = adc_read() 
-            
-            adc_A1_read = adc_A1.read_u16() >> 4
-            adc_A1_percent = ( adc_A1_read * 100 ) / 4095
-            adc_V_read = (adc_A1_read / 4095) * VDD
-            
-            if adc_A1_percent >= 70:
-                adc_A1_output = "1"
-            else: 
-                adc_A1_output = "0"
-
+            adc_A1_read, adc_A1_percent, adc_V_read, adc_A1_output = adc_read(adc_A1) 
+                        
             if usb.isconnected():   
                 datalog(f"{utime.ticks_ms()},{pid.setpoint},{temperatura_attuale:.2f},{out_pid:.1f},{on_time:.2f},{adc_A1_output},{adc_A1_read},{adc_V_read:.3f}")
             
@@ -202,11 +188,28 @@ def heater_PID_to_setpoint(setpoint=35, window = 1.5):
             return False
         
         
-def wait_to_cool():
+def wait_to_cool(adc_):
     
-    while adc_read() != '1':
+    pid = pid_PID()
+    
+    pid.output_limits = (0, 100)
+        # Lettura temperatura
+    temperatura_attuale = temperature_NTC()
+
+    # Calcolo PID
+    out_pid = pid_output(pid, temperatura_attuale)
+
+    # Calcolo tempo ON
+    on_time = (out_pid / 100.0) * window # type:ignore
+
+    adc_A1_read, adc_A1_percent, adc_V_read, adc_A1_output = adc_read(adc_A1) 
+                
+
+    while adc_read(adc_) != '1':
         utime.sleep_ms(1500)
-        datalog()
+        if usb.isconnected():   
+            datalog(f"{utime.ticks_ms()},{pid.setpoint},{temperatura_attuale:.2f},{out_pid:.1f},{on_time:.2f},{adc_A1_output},{adc_A1_read},{adc_V_read:.3f}")
+
     
 def adc_read(adc_):
     
